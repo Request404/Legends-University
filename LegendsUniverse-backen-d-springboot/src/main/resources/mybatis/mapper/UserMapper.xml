@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.legends.universe.mapper.UserMapper">
+
+    <select id="userIsExist" resultType="com.legends.universe.bean.UserProfile">
+        SELECT * FROM user_data WHERE username = #{username}
+    </select>
+    <select id="getUserByNameAndPassword" resultType="com.legends.universe.bean.UserProfile">
+        SELECT * FROM user_data WHERE username = #{username} AND password = #{password}
+    </select>
+    <select id="getUserWithNameAndEmail" resultType="com.legends.universe.bean.UserProfile">
+        SELECT * FROM user_data WHERE username = #{username} AND email = #{email}
+    </select>
+    <select id="getUserByName" resultType="com.legends.universe.bean.UserProfile">
+        SELECT * FROM user_data WHERE username = #{username}
+    </select>
+    <update id="updateUserPassword">
+        UPDATE user_data SET password = #{password} WHERE username =#{username}
+    </update>
+    <update id="updateUserByName">
+        UPDATE user_data SET password = #{password} , email = #{email} WHERE username =#{username}
+    </update>
+    <insert id="insertUser">
+        INSERT INTO user_data (username,password,email) VALUE (#{username},#{password},#{email})
+    </insert>
+
+
+    <resultMap id="getHistoryAndComics" type="com.legends.universe.bean.UserPurchaseHistory">
+        <id column="purchaseOrderId" property="purchaseOrderId"/>
+        <result column="purchaseUserName" property="purchaseUserName"/>
+        <result column="purchaseDate" property="purchaseDate"/>
+        <result column="purchasePay" property="purchasePay"/>
+        <association property="purchaseComics" javaType="com.legends.universe.bean.Comics">
+            <id column="comicsId" property="comicsId"/>
+            <result column="comicsImg" property="comicsImg"/>
+            <result column="comicsName" property="comicsName"/>
+            <result column="comicsDetails" property="comicsDetails"/>
+            <result column="comicsDescription" property="comicsDescription"/>
+            <result column="comicsPrice" property="comicsPrice"/>
+            <result column="contentDes" property="contentDes"/>
+            <result column="detailUrl" property="detailUrl"/>
+        </association>
+    </resultMap>
+    <select id="getUserPurchaseByUser" resultMap="getHistoryAndComics">
+        SELECT
+        p.purchaseOrderId,p.purchaseUserName,p.purchaseDate,p.purchasePay,c.*
+        FROM user_purchase p
+        JOIN comics_data c
+        ON p.purchaseComicsId=c.comicsId
+        WHERE p.purchaseUserName=#{username}
+        ORDER BY p.purchaseDate
+    </select>
+
+
+    <insert id="insertPurchaseHistory">
+        INSERT INTO user_purchase (purchaseUserName,purchaseDate,purchasePay,purchaseComicsId) VALUE (#{purchaseUserName},#{purchaseDate},#{purchasePay},#{purchaseComicsId})
+    </insert>
+
+
+    <resultMap id="getUserStar" type="com.legends.universe.bean.UserStar">
+        <id column="starComicsId" property="starComicsId"></id>
+        <result column="starUser" property="starUser"/>
+        <association property="starComics" javaType="com.legends.universe.bean.Comics">
+            <id column="comicsId" property="comicsId"/>
+            <result column="comicsImg" property="comicsImg"/>
+            <result column="comicsName" property="comicsName"/>
+            <result column="comicsDetails" property="comicsDetails"/>
+            <result column="comicsDescription" property="comicsDescription"/>
+            <result column="comicsPrice" property="comicsPrice"/>
+            <result column="contentDes" property="contentDes"/>
+            <result column="detailUrl" property="detailUrl"/>
+        </association>
+    </resultMap>
+    <select id="getUserStarByUser" resultMap="getUserStar">
+        SELECT
+        s.*,c.*
+        FROM user_star s
+        JOIN comics_data c
+        ON s.starComicsId = c.comicsId
+        WHERE starUser=#{username}
+        ORDER BY s.starComicsId
+    </select>
+<!--    <select id="getUserStar" resultType="com.legends.universe.bean.UserStar">-->
+<!--        SELECT * FROM user_star WHERE starUser = #{username}-->
+<!--    </select>-->
+
+    <insert id="insertUserStar">
+        INSERT INTO user_star (starUser,starComicsId) VALUE (#{starUser},#{starComicsId})
+    </insert>
+    <delete id="cancelUserStar">
+        DELETE FROM user_star WHERE starUser = #{starUser} AND starComicsId = #{starComicsId}
+    </delete>
+</mapper>
